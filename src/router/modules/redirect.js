@@ -16,6 +16,7 @@ export default [
   {
     path: '/redirect/:path(.*)',
     component: Layout,
+    name: 'redirect',
     children: [
       {
         path: '',

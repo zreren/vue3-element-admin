@@ -11,12 +11,17 @@
 -->
 <template>
   <div class="login">
-    <el-form class="form" :model="model" :rules="rules" ref="loginForm">
+    <el-form
+      class="form"
+      :model="state.model"
+      :rules="state.rules"
+      ref="loginForm"
+    >
       <h1 class="title">Vue3 Element Admin</h1>
-      <el-form-item prop="userName">
+      <el-form-item prop="email">
         <el-input
           class="text"
-          v-model="model.userName"
+          v-model="state.model.email"
           prefix-icon="el-icon-user-solid"
           clearable
           placeholder="用户名"
@@ -25,7 +30,7 @@
       <el-form-item prop="password">
         <el-input
           class="text"
-          v-model="model.password"
+          v-model="state.model.password"
           prefix-icon="el-icon-lock"
           show-password
           clearable
@@ -33,20 +38,30 @@
         />
       </el-form-item>
       <el-form-item>
+        <img :src="validateSrc" alt="" />
+        <el-input
+          class="text"
+          v-model="state.model.checkCode"
+          prefix-icon="el-icon-lock"
+          clearable
+          placeholder="密码"
+        />
+      </el-form-item>
+      <el-form-item>
         <el-button
-          :loading="loading"
+          :loading="state.loading"
           type="primary"
           class="btn"
-          @click="submit"
+          @click="state.submit"
         >
-          {{ btnText }}
+          {{ state.btnText }}
         </el-button>
       </el-form-item>
     </el-form>
   </div>
 </template>
 
-<script>
+<script setup>
 import {
   defineComponent,
   getCurrentInstance,
@@ -54,78 +69,85 @@ import {
   toRefs,
   ref,
   computed,
+  onMounted,
 } from 'vue'
-import { Login } from '@/api/login'
+import { Login, getCodeGen } from '@/api/login'
 import { useStore } from 'vuex'
 import { useRouter, useRoute } from 'vue-router'
-
-export default defineComponent({
-  name: 'login',
-  setup() {
-    const { proxy: ctx } = getCurrentInstance() // 可以把ctx当成vue2中的this
-    const store = useStore()
-    const router = useRouter()
-    const route = useRoute()
-    const state = reactive({
-      model: {
-        userName: 'admin',
-        password: '123456',
+onMounted(async () => {
+  const res = await getCodeGen()
+  console.log(res)
+  let imgUrl =
+    'data:image/png;base64,' +
+    btoa(
+      new Uint8Array(res).reduce(
+        (res, byte) => res + String.fromCharCode(byte),
+        ''
+      )
+    )
+  validateSrc.value = imgUrl
+  console.log(validateSrc.value)
+})
+const { proxy: ctx } = getCurrentInstance() // 可以把ctx当成vue2中的this
+const store = useStore()
+const router = useRouter()
+const route = useRoute()
+const validateSrc = ref()
+const loginForm = ref()
+const state = reactive({
+  model: {
+    email: 'mzy@mzy.com',
+    password: '1234',
+    checkCode: '1234',
+  },
+  rules: {
+    email: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
+    password: [
+      { required: true, message: '请输入密码', trigger: 'blur' },
+      {
+        min: 4,
+        max: 12,
+        message: '长度在 6 到 12 个字符',
+        trigger: 'blur',
       },
-      rules: {
-        userName: [
-          { required: true, message: '请输入用户名', trigger: 'blur' },
-        ],
-        password: [
-          { required: true, message: '请输入密码', trigger: 'blur' },
-          {
-            min: 6,
-            max: 12,
-            message: '长度在 6 到 12 个字符',
-            trigger: 'blur',
-          },
-        ],
-      },
-      loading: false,
-      btnText: computed(() => (state.loading ? '登录中...' : '登录')),
-      loginForm: ref(null),
-      submit: () => {
-        if (state.loading) {
-          return
-        }
-        state.loginForm.validate(async valid => {
-          if (valid) {
-            state.loading = true
-            const { code, data, message } = await Login(state.model)
-            if (+code === 200) {
-              ctx.$message.success({
-                message: '登录成功',
-                duration: 1000,
-              })
+    ],
+  },
+  loading: false,
+  btnText: computed(() => (state.loading ? '登录中...' : '登录')),
 
-              const targetPath = decodeURIComponent(route.query.redirect)
-              if (targetPath.startsWith('http')) {
-                // 如果是一个url地址
-                window.location.href = targetPath
-              } else if (targetPath.startsWith('/')) {
-                // 如果是内部路由地址
-                router.push(targetPath)
-              } else {
-                router.push('/')
-              }
-
-              store.dispatch('app/setToken', data)
-            } else {
-              ctx.$message.error(message)
-            }
-            state.loading = false
-          }
-        })
-      },
-    })
-
-    return {
-      ...toRefs(state),
+  submit: () => {
+    console.log('submit!')
+    if (state.loading) {
+      return
     }
+    loginForm.value.validate(async valid => {
+      if (valid) {
+        state.loading = true
+        const { code, data, message } = await Login(state.model)
+        if (+code === 1) {
+          ctx.$message.success({
+            message: '登录成功',
+            duration: 1000,
+          })
+
+          const targetPath = decodeURIComponent(route.query.redirect)
+          if (targetPath.startsWith('http')) {
+            // 如果是一个url地址
+            window.location.href = targetPath
+          } else if (targetPath.startsWith('/')) {
+            // 如果是内部路由地址
+            router.push(targetPath)
+          } else {
+            router.push('/')
+          }
+
+          store.dispatch('app/setToken', data)
+        } else {
+          ctx.$message.error(message)
+        }
+        state.loading = false
+      }
+    })
   },
 })
 </script>
@@ -138,31 +160,37 @@ export default defineComponent({
   height: 100%;
   overflow: hidden;
   background: #2d3a4b;
+
   .form {
     width: 520px;
     max-width: 100%;
     padding: 0 24px;
     box-sizing: border-box;
     margin: 160px auto 0;
+
     .title {
       color: #fff;
       text-align: center;
       font-size: 24px;
       margin: 0 0 24px;
     }
+
     .text {
       font-size: 16px;
+
       :deep(.el-input__inner) {
         border: 1px solid rgba(255, 255, 255, 0.1);
         background: rgba(0, 0, 0, 0.1);
         color: #fff;
         height: 48px;
         line-height: 48px;
+
         &::placeholder {
           color: rgba(255, 255, 255, 0.2);
         }
       }
     }
+
     .btn {
       width: 100%;
     }

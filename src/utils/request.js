@@ -35,9 +35,9 @@ import store from '@/store'
 import router from '@/router'
 
 const service = axios.create({
-  baseURL: '/',
+  baseURL: '/dev-api',
   timeout: 10000,
-  withCredentials: true,
+  // withCredentials: true,
 })
 
 // 拦截请求

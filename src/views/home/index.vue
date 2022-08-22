@@ -10,7 +10,7 @@
  * @Donate: https://huzhushan.gitee.io/vue3-element-admin/donate/
 -->
 <template>
-  <div class="home">home</div>
+  <div class="home">home1</div>
 </template>
 
 <script>

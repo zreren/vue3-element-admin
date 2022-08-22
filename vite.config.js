@@ -71,13 +71,18 @@ export default env => {
       },
     },
     server: {
+      host:'0.0.0.0',
+      port:3000,
       open: true,
       proxy: {
-        '/api': {
-          target: 'http://dev.api.xxx.com', // 后端接口的域名
+        '/dev-api': {
+          target: 'http://120.78.11.162:9000', // 后端接口的域名
           changeOrigin: true,
-          rewrite: path => path.replace(/^\/api/, ''),
+          rewrite: path => path.replace(/^\/dev-api/, ''),
         },
+        '/photo': {
+          target: 'http://120.78.11.162:8080', // 后端接口的域名
+          changeOrigin: true,        },
       },
     },
     esbuild: false,

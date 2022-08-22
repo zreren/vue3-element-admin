@@ -10,7 +10,7 @@
  * @Donate: https://huzhushan.gitee.io/vue3-element-admin/donate/
  */
 const Layout = () => import('@/layout/index.vue')
-const List = () => import('@/views/test/index.vue')
+const List = () => import('@/views/user/list.vue')
 const Add = () => import('@/views/test/Add.vue')
 const Edit = () => import('@/views/test/Edit.vue')
 const Auth = () => import('@/views/test/Auth.vue')
@@ -24,17 +24,17 @@ const ErrorLog = () => import('@/views/test/error-log/index.vue')
 
 export default [
   {
-    path: '/test',
+    path: '/user',
     component: Layout,
-    name: 'test',
+    name: 'user',
     meta: {
-      title: '订单管理',
+      title: '用户中心',
     },
     icon: 'el-icon-location',
     children: [
       {
         path: '',
-        name: 'testList',
+        name: 'userList',
         component: List,
         meta: {
           title: '列表',

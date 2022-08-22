@@ -17,12 +17,21 @@ export default [
   {
     path: '/home',
     component: Layout,
-    name: 'Dashboard',
+    name: 'dashboard',
     meta: {
       title: '工作台',
     },
     icon: 'home',
     children: [
+      {
+        path: '',
+        name: 'home',
+        component: Home,
+        meta: {
+          title: '首页',
+          affix: true,
+        },
+      },
       {
         path: '',
         name: 'home',

@@ -14,16 +14,23 @@ import request from '@/utils/request'
 // 登录接口
 export const Login = data => {
   return request({
-    url: '/api/login',
+    url: '/admin/login',
     method: 'post',
     data,
   })
 }
 
-// 获取登录用户信息
-export const GetUserinfo = () => {
+export function getCodeGen() {
   return request({
-    url: '/api/userinfo',
+    url: '/common/checkCodeGen',
     method: 'get',
+    responseType: 'arraybuffer',
   })
 }
+// 获取登录用户信息
+// export const GetUserinfo = () => {
+//   return request({
+//     url: '/api/userinfo',
+//     method: 'get',
+//   })
+// }
