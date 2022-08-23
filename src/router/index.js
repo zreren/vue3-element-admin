@@ -9,9 +9,23 @@ import test from './modules/test'
 import user from './modules/user'
 import business from './modules/business'
 import logs from './modules/logs'
+import config from './modules/config'
+import financial from './modules/financial'
+import recruitment from './modules/recruitment'
+import task from './modules/task'
 /* 菜单栏的路由 */
 // 固定菜单
-export const fixedRoutes = [...home, ...user, ...business, ...test, ...logs]
+export const fixedRoutes = [
+  ...home,
+  ...user,
+  ...business,
+  ...test,
+  ...logs,
+  ...config,
+  ...financial,
+  ...recruitment,
+  ...task,
+]
 // 动态菜单
 export const asyncRoutes = []
 

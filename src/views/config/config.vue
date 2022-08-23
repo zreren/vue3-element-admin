@@ -1,7 +1,7 @@
 <template>
   <pro-table
     ref="table"
-    title="商家列表"
+    title="日志记录"
     :request="getList"
     :columns="columns"
     :search="searchConfig"
@@ -35,9 +35,6 @@
       >
         编辑
       </el-button>
-      <el-button size="mini" type="danger" @click="blockUserFn(scope.row.id)">
-        封号
-      </el-button>
       <el-button size="mini" type="danger" @click="deleteUserFn(scope.row.id)">
         删除
       </el-button>
@@ -47,10 +44,10 @@
 
 <script>
 import { defineComponent, onMounted, reactive, ref, toRefs } from 'vue'
-import { getMerchantPage, deleteMerchant } from '../../api/business'
+import { getConfigPage } from '../../api/common'
 import { param } from '../../utils'
 export default defineComponent({
-  name: 'businessList',
+  name: 'config',
   setup() {
     const statusTable = {
       0: '普通',
@@ -60,16 +57,22 @@ export default defineComponent({
       0: '美团',
       1: '饿了么',
     }
-
+    // adminId: "8"
+    // adminName: "mzy"
+    // content: "管理员”null“删除了1用户"
+    // createTime: "2022-08-22 08:45:46"
+    // id: "16399"
+    // name: "删除用户"
     const state = reactive({
       // 表格列配置，大部分属性跟el-table-column配置一样
       columns: [
         { type: 'selection' },
         { label: '序号', type: 'index', props: 'id' },
-        { label: '名称', prop: 'name', width: 160 },
-        { label: '头像', prop: 'pic', tdSlot: 'avatar', width: 60 },
-        { label: '地址', prop: 'address', width: 290 },
-
+        { label: '配置项', prop: 'name', width: 200 },
+        { label: '配置内容', prop: 'content', width: 300 },
+        // { label: '操作类型', prop: 'name', width: 150 },
+        // { label: '操作内容', prop: 'content', width: 150 },
+        // { label: '操作时间', prop: 'createTime' },
         {
           label: '操作',
           width: 220,
@@ -84,46 +87,46 @@ export default defineComponent({
         fields: [
           {
             type: 'text',
-            label: '用户id',
+            label: '管理员id',
             name: 'nickName',
             defaultValue: 'abc',
           },
           {
             type: 'text',
-            label: '用户手机号',
+            label: '管理员名字',
             name: 'description',
           },
           {
-            label: '会员状态',
+            label: '操作类型',
             name: 'status',
             type: 'select',
             defaultValue: 1,
             options: [
               {
-                name: '会员',
+                name: '新增渠道合作',
                 value: 1,
               },
               {
-                name: '普通',
+                name: '财务',
                 value: 0,
               },
             ],
           },
-          {
-            label: '性别',
-            name: 'sex',
-            type: 'radio',
-            options: [
-              {
-                name: '男',
-                value: 1,
-              },
-              {
-                name: '女',
-                value: 0,
-              },
-            ],
-          },
+          // {
+          //     label: '性别',
+          //     name: 'sex',
+          //     type: 'radio',
+          //     options: [
+          //         {
+          //             name: '男',
+          //             value: 1,
+          //         },
+          //         {
+          //             name: '女',
+          //             value: 0,
+          //         },
+          //     ],
+          // },
           // {
           //     label: '城市',
           //     name: 'city',
@@ -248,10 +251,7 @@ export default defineComponent({
       async getList(params) {
         console.log(params, 'params')
         // params是从组件接收的，包含分页和搜索字段。
-        const { data } = await getMerchantPage({
-          offset: params.current,
-          limit: params.size,
-        })
+        const { data } = await getConfigPage()
         // new Promise(rs => {
         //   setTimeout(() => {
         //     rs({
@@ -287,7 +287,7 @@ export default defineComponent({
       table.value.refresh()
     }
     const deleteUserFn = async id => {
-      const res = await deleteMerchant({ id: id })
+      // const res = await deleteMerchant({ id: id })
     }
     onMounted(async () => {
       // toRefs(state)

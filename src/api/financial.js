@@ -1,9 +1,17 @@
 import request from '@/utils/request'
 
 // 查询日志
-export const getLogPage = data => {
+
+export const getCashablePageInfo = data => {
   return request({
-    url: '/logs/page',
+    url: '/financeList/getCashablePageInfo',
+    method: 'get',
+    params: data,
+  })
+}
+export const getRechargePageInfo = data => {
+  return request({
+    url: '/financeList/getRechargePageInfo',
     method: 'get',
     params: data,
   })
@@ -21,10 +29,3 @@ export const getConfigPage = () => {
 //       params:data,
 //     })
 //   }
-export const getRecruitment = data => {
-  return request({
-    url: '/recruitment/page',
-    method: 'get',
-    params: data,
-  })
-}

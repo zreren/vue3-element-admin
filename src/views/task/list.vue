@@ -1,7 +1,7 @@
 <template>
   <pro-table
     ref="table"
-    title="商家列表"
+    title="日志记录"
     :request="getList"
     :columns="columns"
     :search="searchConfig"
@@ -35,22 +35,27 @@
       >
         编辑
       </el-button>
-      <el-button size="mini" type="danger" @click="blockUserFn(scope.row.id)">
-        封号
-      </el-button>
       <el-button size="mini" type="danger" @click="deleteUserFn(scope.row.id)">
         删除
       </el-button>
+    </template>
+    <template #status="{ row }">
+      <el-switch
+        v-model="row.status"
+        :active-value="1"
+        :inactive-value="0"
+        @change="changeStatus(row)"
+      />
     </template>
   </pro-table>
 </template>
 
 <script>
 import { defineComponent, onMounted, reactive, ref, toRefs } from 'vue'
-import { getMerchantPage, deleteMerchant } from '../../api/business'
+import { getTaskPage, putStatus } from '../../api/task'
 import { param } from '../../utils'
 export default defineComponent({
-  name: 'businessList',
+  name: 'task',
   setup() {
     const statusTable = {
       0: '普通',
@@ -60,15 +65,32 @@ export default defineComponent({
       0: '美团',
       1: '饿了么',
     }
-
+    // adminId: "8"
+    // adminName: "mzy"
+    // content: "管理员”null“删除了1用户"
+    // createTime: "2022-08-22 08:45:46"
+    // id: "16399"
+    // name: "删除用户"
     const state = reactive({
       // 表格列配置，大部分属性跟el-table-column配置一样
       columns: [
         { type: 'selection' },
         { label: '序号', type: 'index', props: 'id' },
-        { label: '名称', prop: 'name', width: 160 },
-        { label: '头像', prop: 'pic', tdSlot: 'avatar', width: 60 },
-        { label: '地址', prop: 'address', width: 290 },
+        { label: '商家id', prop: 'merchantId', width: 100 },
+        { label: '商家id', prop: 'merchantName', width: 100 },
+        { label: '任务名称', prop: 'name', width: 150 },
+        { label: '非会员最低', prop: 'minConsumptionA', width: 100 },
+        { label: '非会员返现', prop: 'rebateB', width: 100 },
+        { label: '会员最低', prop: 'minConsumptionB', width: 150 },
+        { label: '会员返现', prop: 'rebateA', width: 100 },
+        { label: '类型', prop: 'type', width: 100 },
+        { label: '平台', prop: 'platform', width: 100 },
+        { label: '备注', prop: 'remark', width: 100 },
+        { label: '要求', prop: 'requirement', width: 200 },
+        { label: '任务总数', prop: 'amount' },
+        { label: '任务剩余', prop: 'taskLeft' },
+        { label: 'completed', prop: 'completed' },
+        { label: 'status', prop: 'status', tdSlot: 'status' },
 
         {
           label: '操作',
@@ -84,46 +106,47 @@ export default defineComponent({
         fields: [
           {
             type: 'text',
-            label: '用户id',
-            name: 'nickName',
+            label: '任务名称',
+            name: 'name',
             defaultValue: 'abc',
           },
           {
             type: 'text',
-            label: '用户手机号',
-            name: 'description',
+            label: '商家名称',
+            name: 'merchantName',
+            defaultValue: 'abc',
           },
           {
-            label: '会员状态',
+            label: '状态',
             name: 'status',
             type: 'select',
             defaultValue: 1,
             options: [
               {
-                name: '会员',
+                name: '启用',
                 value: 1,
               },
               {
-                name: '普通',
+                name: '禁用',
                 value: 0,
               },
             ],
           },
-          {
-            label: '性别',
-            name: 'sex',
-            type: 'radio',
-            options: [
-              {
-                name: '男',
-                value: 1,
-              },
-              {
-                name: '女',
-                value: 0,
-              },
-            ],
-          },
+          // {
+          //     label: '性别',
+          //     name: 'sex',
+          //     type: 'radio',
+          //     options: [
+          //         {
+          //             name: '男',
+          //             value: 1,
+          //         },
+          //         {
+          //             name: '女',
+          //             value: 0,
+          //         },
+          //     ],
+          // },
           // {
           //     label: '城市',
           //     name: 'city',
@@ -248,7 +271,7 @@ export default defineComponent({
       async getList(params) {
         console.log(params, 'params')
         // params是从组件接收的，包含分页和搜索字段。
-        const { data } = await getMerchantPage({
+        const { data } = await getTaskPage({
           offset: params.current,
           limit: params.size,
         })
@@ -287,7 +310,45 @@ export default defineComponent({
       table.value.refresh()
     }
     const deleteUserFn = async id => {
-      const res = await deleteMerchant({ id: id })
+      // const res = await deleteMerchant({ id: id })
+    }
+    const changeStatus = async val => {
+      console.log(val)
+      if (val.status == 1) {
+        putStatus({
+          id: val.id,
+          status: 1,
+          merchantId: val.merchantId,
+          name: val.name,
+          type: val.type,
+          platform: val.platform,
+          comment: val.comment,
+          amount: val.amount,
+          minConsumptionA: val.minConsumptionA,
+          rebateA: val.rebateA,
+          minConsumptionB: val.minConsumptionB,
+          rebateB: val.rebateB,
+          requirement: val.requirement,
+          remark: val.remark,
+        })
+      } else if (val.status == 0) {
+        putStatus({
+          id: val.id,
+          status: 0,
+          merchantId: val.merchantId,
+          name: val.name,
+          type: val.type,
+          platform: val.platform,
+          comment: val.comment,
+          amount: val.amount,
+          minConsumptionA: val.minConsumptionA,
+          rebateA: val.rebateA,
+          minConsumptionB: val.minConsumptionB,
+          rebateB: val.rebateB,
+          requirement: val.requirement,
+          remark: val.remark,
+        })
+      }
     }
     onMounted(async () => {
       // toRefs(state)
@@ -304,6 +365,7 @@ export default defineComponent({
       statusTable,
       platformTable,
       deleteUserFn,
+      changeStatus,
     }
   },
 })

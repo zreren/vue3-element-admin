@@ -32,15 +32,6 @@ export default [
           affix: true,
         },
       },
-      {
-        path: '',
-        name: 'home',
-        component: Home,
-        meta: {
-          title: '首页',
-          affix: true,
-        },
-      },
     ],
   },
 ]
