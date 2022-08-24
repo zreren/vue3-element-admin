@@ -1,7 +1,16 @@
 <template>
+  <el-dialog v-model="dialogFormVisible" title="拒绝提现请求">
+    <el-input v-model="rejectReson" placeholder="Please input" />
+    <template #footer>
+      <span class="dialog-footer">
+        <el-button @click="dialogFormVisible = false">Cancel</el-button>
+        <el-button type="primary" @click="reject">Confirm</el-button>
+      </span>
+    </template>
+  </el-dialog>
   <pro-table
     ref="table"
-    title="日志记录"
+    title="提现管理"
     :request="getList"
     :columns="columns"
     :search="searchConfig"
@@ -9,53 +18,92 @@
     @selectionChange="handleSelectionChange"
   >
     <!-- 工具栏 -->
-    <template #toolbar>
+    <!-- <template #toolbar>
       <el-button type="primary" icon="el-icon-delete" @click="batchDelete">
         批量删除
       </el-button>
-      <el-button
-        type="primary"
-        icon="el-icon-plus"
-        @click="$router.push('/test/add')"
-      >
+      <el-button type="primary" icon="el-icon-plus" @click="$router.push('/test/add')">
         添加一条
       </el-button>
       <el-button type="primary" icon="el-icon-refresh" @click="refresh">
         刷新
       </el-button>
-    </template>
+    </template> -->
     <template #avatar="{ row }">
       <img class="avatar" :src="`/photo/${row.pic}`" />
     </template>
     <template #operate="scope">
       <el-button
         size="mini"
-        type="primary"
-        @click="$router.push(`/test/edit/${scope.row.id}`)"
+        type="plain"
+        :disabled="scope.row.status !== 1 ? true : false"
+        @click="updateCashRequestFn(scope.row.id)"
       >
-        编辑
+        确认转账
       </el-button>
+      <el-button
+        size="mini"
+        type="danger"
+        :disabled="scope.row.status !== 1 ? true : false"
+        @click="rejectCash(scope.row.id)"
+      >
+        拒绝转账
+      </el-button>
+      <!-- <el-button size="mini" type="primary" @click="$router.push(`/test/edit/${scope.row.id}`)">
+        编辑
+      </el-button> -->
       <el-button size="mini" type="danger" @click="deleteUserFn(scope.row.id)">
         删除
       </el-button>
+    </template>
+    <template #payType="{ row }">
+      {{ payType[row.payType] }}
+    </template>
+
+    <template #status="{ row }">
+      {{ statusTable[row.status] }}
     </template>
   </pro-table>
 </template>
 
 <script>
 import { defineComponent, onMounted, reactive, ref, toRefs } from 'vue'
-import { getCashablePageInfo } from '../../api/financial'
+import {
+  getCashablePageInfo,
+  updateCashRequest,
+  rejectCashRequest,
+} from '../../api/financial'
 import { param } from '../../utils'
 export default defineComponent({
   name: 'financial',
   setup() {
-    const statusTable = {
-      0: '普通',
-      1: '会员',
+    const rejectReson = ref('')
+    const dialogFormVisible = ref(false)
+    const payType = {
+      1: '支付宝',
+      2: '微信',
     }
-    const platformTable = {
-      0: '美团',
-      1: '饿了么',
+    const table = ref(null)
+    const refresh = () => {
+      table.value.refresh()
+    }
+    const selectId = ref('')
+    // 提现状态（1为待转账，2为已转账，3为已取消）
+    const statusTable = {
+      1: '待转账',
+      2: '已转账',
+      3: '已取消',
+    }
+    const rejectCash = val => {
+      dialogFormVisible.value = true
+      selectId.value = val
+    }
+    const reject = async () => {
+      dialogFormVisible.value = false
+      await rejectCashRequest({
+        withdrawReason: rejectReson.value,
+        id: selectId.value,
+      })
     }
     // adminId: "8"
     // adminName: "mzy"
@@ -63,20 +111,30 @@ export default defineComponent({
     // createTime: "2022-08-22 08:45:46"
     // id: "16399"
     // name: "删除用户"
+    const form = reactive({
+      name: '',
+      region: '',
+    })
     const state = reactive({
       // 表格列配置，大部分属性跟el-table-column配置一样
       columns: [
         { type: 'selection' },
-        { label: '序号', type: 'index', props: 'id' },
-        { label: '操作人ID', prop: 'adminId', width: 100 },
-        { label: '操作人名称', prop: 'adminName', width: 100 },
-        { label: '操作类型', prop: 'name', width: 150 },
-        { label: '操作内容', prop: 'content', width: 150 },
-        { label: '操作时间', prop: 'createTime' },
+        { label: '序号', type: 'index', prop: 'id' },
+        { label: '申请人ID', prop: 'userId', width: 100 },
+        { label: '申请人昵称', prop: 'userName', width: 100 },
+        { label: '提现金额', prop: 'cashableAmount', width: 100 },
+        { label: '支付方式', prop: 'payType', tdSlot: 'payType', width: 150 },
+        { label: '支付宝账号', prop: 'aliPayId' },
+        { label: '支付宝名字', prop: 'aliPayName' },
+        { label: '状态', prop: 'status', tdSlot: 'status', width: 120 },
+        { label: '备注', prop: 'withdrawReason' },
+        { label: '申请时间', prop: 'createTime' },
+        { label: '状态变更时间', prop: 'updateTime' },
+
         {
           label: '操作',
-          width: 220,
-          align: 'center',
+          width: 400,
+          align: 'left',
           tdSlot: 'operate', // 自定义单元格内容的插槽名称
         },
       ],
@@ -247,6 +305,7 @@ export default defineComponent({
       handleSelectionChange(arr) {
         state.selectedItems = arr
       },
+
       // 请求函数
       async getList(params) {
         console.log(params, 'params')
@@ -286,9 +345,11 @@ export default defineComponent({
         }
       },
     })
-    const table = ref(null)
-    const refresh = () => {
-      table.value.refresh()
+    const updateCashRequestFn = val => {
+      updateCashRequest({
+        id: val,
+      })
+      // refresh()
     }
     const deleteUserFn = async id => {
       // const res = await deleteMerchant({ id: id })
@@ -303,11 +364,17 @@ export default defineComponent({
     })
     return {
       ...toRefs(state),
+      ...toRefs(form),
+      rejectReson,
+      dialogFormVisible,
       refresh,
-      table,
       statusTable,
-      platformTable,
+      rejectCash,
+      reject,
+      selectId,
       deleteUserFn,
+      payType,
+      updateCashRequestFn,
     }
   },
 })

@@ -1,7 +1,7 @@
 <template>
   <pro-table
     ref="table"
-    title="日志记录"
+    title="任务列表"
     :request="getList"
     :columns="columns"
     :search="searchConfig"
@@ -16,7 +16,7 @@
       <el-button
         type="primary"
         icon="el-icon-plus"
-        @click="$router.push('/test/add')"
+        @click="$router.push('/task/add')"
       >
         添加一条
       </el-button>
@@ -26,6 +26,12 @@
     </template>
     <template #avatar="{ row }">
       <img class="avatar" :src="`/photo/${row.pic}`" />
+    </template>
+    <template #type="{ row }">
+      {{ taskType[row.type] }}
+    </template>
+    <template #platform="{ row }">
+      {{ platformTable[row.platform] }}
     </template>
     <template #operate="scope">
       <el-button
@@ -47,6 +53,14 @@
         @change="changeStatus(row)"
       />
     </template>
+    <template #comment="{row}">
+      <el-switch
+        v-model="row.comment"
+        :active-value="0"
+        :inactive-value="1"
+        @change="changeStatus(row)"
+      />
+    </template>
   </pro-table>
 </template>
 
@@ -65,6 +79,12 @@ export default defineComponent({
       0: '美团',
       1: '饿了么',
     }
+    const taskType = {
+      0: '早餐',
+      1: '午餐',
+      2: '下午茶',
+      3: '宵夜',
+    }
     // adminId: "8"
     // adminName: "mzy"
     // content: "管理员”null“删除了1用户"
@@ -77,20 +97,21 @@ export default defineComponent({
         { type: 'selection' },
         { label: '序号', type: 'index', props: 'id' },
         { label: '商家id', prop: 'merchantId', width: 100 },
-        { label: '商家id', prop: 'merchantName', width: 100 },
+        { label: '商家', prop: 'merchantName', width: 100 },
         { label: '任务名称', prop: 'name', width: 150 },
         { label: '非会员最低', prop: 'minConsumptionA', width: 100 },
         { label: '非会员返现', prop: 'rebateB', width: 100 },
         { label: '会员最低', prop: 'minConsumptionB', width: 150 },
         { label: '会员返现', prop: 'rebateA', width: 100 },
-        { label: '类型', prop: 'type', width: 100 },
-        { label: '平台', prop: 'platform', width: 100 },
+        { label: '类型', prop: 'type', tdSlot: 'type', width: 100 },
+        { label: '平台', prop: 'platform', tdSlot: 'platform', width: 100 },
         { label: '备注', prop: 'remark', width: 100 },
         { label: '要求', prop: 'requirement', width: 200 },
         { label: '任务总数', prop: 'amount' },
         { label: '任务剩余', prop: 'taskLeft' },
-        { label: 'completed', prop: 'completed' },
-        { label: 'status', prop: 'status', tdSlot: 'status' },
+        { label: '已完成', prop: 'completed' },
+        { label: '是否需要评价', props: 'comment', tdSlot: 'comment' },
+        { label: '任务状态', prop: 'status', tdSlot: 'status' },
 
         {
           label: '操作',
@@ -313,7 +334,8 @@ export default defineComponent({
       // const res = await deleteMerchant({ id: id })
     }
     const changeStatus = async val => {
-      console.log(val)
+      console.log(val, 'val')
+      if (val.id === null || val.id === undefined) return
       if (val.status == 1) {
         putStatus({
           id: val.id,
@@ -364,6 +386,7 @@ export default defineComponent({
       table,
       statusTable,
       platformTable,
+      taskType,
       deleteUserFn,
       changeStatus,
     }

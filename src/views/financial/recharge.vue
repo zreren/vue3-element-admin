@@ -254,8 +254,8 @@ export default defineComponent({
           Page: params.current,
           PageSize: params.size,
           chooseType: 0,
-          //   beginTime:'2022-01-01',
-          //   endTime:'2022-08-23',
+          beginTime: '2022-01-01',
+          endTime: '2022-08-23',
         })
         // new Promise(rs => {
         //   setTimeout(() => {

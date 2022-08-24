@@ -58,91 +58,11 @@
 
 <script>
 import { defineComponent, reactive, toRefs, onMounted } from 'vue'
+import { getTaskPage, addTask } from '../../api/task'
 
 export default defineComponent({
+  name: 'taskadd',
   setup() {
-    const state = reactive({
-      roles: ['11', '311'],
-      treeData: [
-        {
-          id: '1',
-          label: '一级 1',
-          children: [
-            {
-              id: '11',
-              label: '二级 1-1',
-              children: [
-                {
-                  id: '111',
-                  label: '三级 1-1-1',
-                },
-              ],
-            },
-          ],
-        },
-        {
-          id: '2',
-          label: '一级 2',
-          children: [
-            {
-              id: '21',
-              label: '二级 2-1',
-              children: [
-                {
-                  id: '211',
-                  label: '三级 2-1-1',
-                },
-              ],
-            },
-            {
-              id: '22',
-              label: '二级 2-2',
-              children: [
-                {
-                  id: '221',
-                  label: '三级 2-2-1',
-                },
-              ],
-            },
-          ],
-        },
-        {
-          id: '3',
-          label: '一级 3',
-          children: [
-            {
-              id: '31',
-              label: '二级 3-1',
-              children: [
-                {
-                  id: '311',
-                  label: '三级 3-1-1',
-                },
-              ],
-            },
-            {
-              id: '32',
-              label: '二级 3-2',
-              children: [
-                {
-                  id: '321',
-                  label: '三级 3-2-1',
-                },
-              ],
-            },
-          ],
-        },
-      ],
-      treeProps: {
-        props: {
-          children: 'children',
-          label: 'label',
-        },
-      },
-      handleChange(v) {
-        console.log('你选择了:', v)
-      },
-    })
     let form = reactive({
       name: '',
       merchantId: '',
@@ -159,15 +79,18 @@ export default defineComponent({
       status: 1,
       desc: '',
     })
-
+    const addTaskFn = async () => {
+      const res = addTask(form)
+    }
     const onSubmit = () => {
-      console.log('submit!')
+      const res = addTask(form)
     }
     onMounted(() => {
       form.platform = String(0)
       form.comment = String(0)
     })
     return {
+      addTaskFn,
       form,
       onSubmit,
     }

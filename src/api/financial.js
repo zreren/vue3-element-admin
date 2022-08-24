@@ -29,3 +29,18 @@ export const getConfigPage = () => {
 //       params:data,
 //     })
 //   }
+export const updateCashRequest = data => {
+  return request({
+    url: '/financeList/updateAgreeInfo',
+    method: 'put',
+    params: data,
+  })
+}
+
+export const rejectCashRequest = data => {
+  return request({
+    url: '/financeList/updateWithdrawInfo',
+    method: 'post',
+    params: data,
+  })
+}

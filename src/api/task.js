@@ -16,3 +16,11 @@ export const putStatus = data => {
     data,
   })
 }
+
+export const addTask = data => {
+  return request({
+    url: '/task',
+    method: 'post',
+    data,
+  })
+}
